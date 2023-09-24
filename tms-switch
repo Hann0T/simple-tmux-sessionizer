@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+selected=$(tmux list-sessions -F "#{session_name}" 2> /dev/null | fzf)
+tmux_sessions=$(pgrep tmux)
+current=$(tmux display-message -p '#S' 2> /dev/null)
+
+if [ -z $selected ]; then
+    exit 0
+fi
+
+if [ $selected == $current ] && ! [ -z $TMUX ]; then
+    echo "same session"
+    exit 0
+fi
+
+if ! [ $TMUX ] && ! [ -z $tmux_sessions ]; then
+    echo "attaching to session"
+    tmux attach -t $selected
+else 
+    echo "switching to session"
+    tmux switch-client -t $selected
+fi
+
+exit 0
