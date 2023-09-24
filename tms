@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+selected=$(find  ~/Developer/* -mindepth 1 -maxdepth 1 -type d | fzf)
+
+if [ -z $selected ]; then
+    exit 0
+fi
+
+selected_name=$(basename $selected | tr . _)
+tmux_sessions=$(pgrep tmux)
+
+if tmux has-session -t $selected_name 2> /dev/null; then
+    echo "session already exists"
+else
+    echo "creating new session"
+    tmux new-session -ds $selected_name -c $selected
+fi
+
+if ! [ -z $TMUX ]; then
+    echo "switching session"
+    tmux switch-client -t $selected_name
+else
+    echo "attaching session"
+    tmux attach -t $selected_name
+fi
+
+exit 0
